@@ -4,5 +4,7 @@ services:
     restart: always
     ports:
       - '5432:5432'
-    env_file:
-      - .env
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=data_QLCC_4Bros_BE
