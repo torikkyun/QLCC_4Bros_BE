@@ -9,15 +9,20 @@ import * as t from '../drizzle/schema/schema';
 @Injectable()
 export class UserService {
   constructor(@Inject(DRIZZLE) private db: DrizzleDB) {}
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+
+  async create(createUserDto: CreateUserDto) {
+    return await this.db.insert(t.users).values(createUserDto).returning();
   }
 
   async findAll() {
     return await this.db.query.users.findMany();
   }
 
-  async findOne(id: number) {
+  async findByEmail(email: string) {
+    return await this.db.select().from(t.users).where(eq(t.users.email, email));
+  }
+
+  async findById(id: number) {
     return await this.db.select().from(t.users).where(eq(t.users.id, id));
   }
 
