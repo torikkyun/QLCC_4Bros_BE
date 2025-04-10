@@ -5,6 +5,7 @@
 ```bash
 $ yarn
 $ docker-compose up -d
+$ yarn run seed:manager
 ```
 
 ## Chạy dự án
