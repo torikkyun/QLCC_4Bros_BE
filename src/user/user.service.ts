@@ -5,6 +5,7 @@ import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { DrizzleDB } from 'src/drizzle/types/drizzle';
 import { eq } from 'drizzle-orm';
 import * as t from '../drizzle/schema/schema';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -23,14 +24,27 @@ export class UserService {
   }
 
   async findById(id: number) {
-    return await this.db.select().from(t.users).where(eq(t.users.id, id));
+    const [result] = await this.db
+      .select()
+      .from(t.users)
+      .where(eq(t.users.id, id));
+    return result;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    if (updateUserDto.password) {
+      const password = await bcrypt.hash(updateUserDto.password, 10);
+      updateUserDto.password = password;
+    }
+    const [result] = await this.db
+      .update(t.users)
+      .set(updateUserDto)
+      .where(eq(t.users.id, id))
+      .returning();
+    return result;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) {
+    return await this.db.delete(t.users).where(eq(t.users.id, id));
   }
 }

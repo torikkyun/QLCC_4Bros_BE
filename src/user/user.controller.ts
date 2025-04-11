@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Patch,
   Param,
@@ -9,22 +8,16 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { Roles } from 'src/decorators/roles.decorator';
 import { RolesGuard } from 'src/guards/roles.guard';
 
-@Controller('user')
-@ApiTags('User')
+@Controller('api/user')
+@ApiTags('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  // @Post()
-  // create(@Body() createUserDto: CreateUserDto) {
-  //   return this.userService.create(createUserDto);
-  // }
 
   @Get()
   findAll() {
@@ -37,9 +30,9 @@ export class UserController {
   @ApiParam({
     name: 'id',
     required: true,
-    type: String,
+    type: Number,
   })
-  findById(@Param('id') id: string) {
+  findById(@Param('id') id: number) {
     return this.userService.findById(+id);
   }
 
@@ -49,12 +42,12 @@ export class UserController {
   @ApiParam({
     name: 'id',
     required: true,
-    type: String,
+    type: Number,
   })
   @ApiBody({
     type: UpdateUserDto,
   })
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
   }
 
@@ -65,9 +58,9 @@ export class UserController {
   @ApiParam({
     name: 'id',
     required: true,
-    type: String,
+    type: Number,
   })
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: number) {
     return this.userService.remove(+id);
   }
 }
