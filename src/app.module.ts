@@ -3,6 +3,10 @@ import { DrizzleModule } from './drizzle/drizzle.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { RoomModule } from './room/room.module';
+import { CandidateModule } from './candidate/candidate.module';
+import { ElectionModule } from './election/election.module';
+import { VoteModule } from './vote/vote.module';
 
 @Module({
   imports: [
@@ -10,6 +14,10 @@ import { AuthModule } from './auth/auth.module';
     ConfigModule.forRoot({ isGlobal: true }),
     UserModule,
     AuthModule,
+    RoomModule,
+    CandidateModule,
+    ElectionModule,
+    VoteModule,
   ],
 })
 export class AppModule {}
