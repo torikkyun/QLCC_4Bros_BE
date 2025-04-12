@@ -12,7 +12,7 @@ import {
 import { CandidateService } from './candidate.service';
 import { CreateCandidateDto } from './dto/create-candidate.dto';
 import { UpdateCandidateDto } from './dto/update-candidate.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
@@ -27,6 +27,7 @@ export class CandidateController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('manager')
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'admin' })
   create(@Body() createCandidateDto: CreateCandidateDto) {
     return this.candidateService.create(createCandidateDto);
   }
@@ -49,6 +50,7 @@ export class CandidateController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('manager')
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'admin' })
   update(
     @Param('id') id: string,
     @Body() updateCandidateDto: UpdateCandidateDto,
@@ -60,6 +62,7 @@ export class CandidateController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('manager')
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'admin' })
   remove(@Param('id') id: string) {
     return this.candidateService.remove(+id);
   }

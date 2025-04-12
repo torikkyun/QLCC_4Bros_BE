@@ -4,7 +4,6 @@ import * as bcrypt from 'bcrypt';
 import { users } from './schema/users.schema';
 
 async function seedManagerAccount() {
-  // Kết nối với database
   const pool = new Pool({
     connectionString:
       'postgres://postgres:postgres@localhost:5432/data_QLCC_4Bros_BE?sslmode=disable',
@@ -35,4 +34,7 @@ async function seedManagerAccount() {
   }
 }
 
-seedManagerAccount();
+seedManagerAccount().catch((err) => {
+  console.error('Failed to start application:', err);
+  process.exit(1);
+});

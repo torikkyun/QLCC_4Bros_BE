@@ -93,6 +93,14 @@ export class ElectionService {
       );
     }
 
+    if (new Date(newStartDate) < new Date()) {
+      throw new BadRequestException('startDate cannot be in the past');
+    }
+
+    if (new Date(newEndDate) < new Date()) {
+      throw new BadRequestException('endDate cannot be in the past');
+    }
+
     const updateData = {
       ...rest,
       startDate: new Date(newStartDate).toISOString().split('T')[0],

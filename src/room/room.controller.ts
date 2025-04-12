@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto/create-room.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -29,6 +29,7 @@ export class RoomController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('manager')
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'admin' })
   create(@Body() createRoomDto: CreateRoomDto) {
     return this.roomService.create(createRoomDto);
   }
@@ -45,7 +46,9 @@ export class RoomController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('manager')
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'admin' })
   update(@Param('id') id: number, @Body() updateRoomDto: UpdateRoomDto) {
     return this.roomService.update(+id, updateRoomDto);
   }
@@ -71,6 +74,7 @@ export class RoomController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('manager')
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'admin' })
   remove(@Param('id') id: number) {
     return this.roomService.remove(+id);
   }

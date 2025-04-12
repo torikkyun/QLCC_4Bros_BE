@@ -6,11 +6,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
-    .setTitle('QLCC')
-    .setDescription('The cats API description')
+    .setTitle('QLCC 4Bros API')
+    .setDescription('Made with ❤️')
     .setVersion('1.0')
     .addBearerAuth({
-      description: `Please enter token in following format: Bearer <JWT>`,
+      description: 'Please enter token in following format: Bearer {JWT}',
       name: 'Authorization',
       bearerFormat: 'Bearer',
       scheme: 'Bearer',

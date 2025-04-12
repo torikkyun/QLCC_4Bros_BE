@@ -15,7 +15,7 @@ import { UpdateElectionDto } from './dto/update-election.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ElectionPaginationDto } from './dto/election-pagination.dto';
 
 @Controller('api/election')
@@ -27,6 +27,7 @@ export class ElectionController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('manager')
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'admin' })
   create(@Body() createElectionDto: CreateElectionDto) {
     return this.electionService.create(createElectionDto);
   }
@@ -49,6 +50,7 @@ export class ElectionController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('manager')
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'admin' })
   update(
     @Param('id') id: number,
     @Body() updateElectionDto: UpdateElectionDto,
@@ -60,6 +62,7 @@ export class ElectionController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('manager')
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'admin' })
   remove(@Param('id') id: number) {
     return this.electionService.remove(+id);
   }

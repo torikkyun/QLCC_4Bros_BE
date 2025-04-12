@@ -10,7 +10,12 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiBearerAuth, ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles.guard';
@@ -46,9 +51,6 @@ export class UserController {
     required: true,
     type: Number,
   })
-  @ApiBody({
-    type: UpdateUserDto,
-  })
   update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
   }
@@ -61,6 +63,9 @@ export class UserController {
     name: 'id',
     required: true,
     type: Number,
+  })
+  @ApiOperation({
+    summary: 'admin',
   })
   remove(@Param('id') id: number) {
     return this.userService.remove(+id);
