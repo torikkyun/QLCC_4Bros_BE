@@ -7,14 +7,17 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto/create-room.dto';
-import { ApiBearerAuth, ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { BookRoomDto } from './dto/book-room.dto';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('api/room')
 @ApiTags('room')
@@ -25,24 +28,16 @@ export class RoomController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('manager')
   @ApiBearerAuth()
-  @ApiBody({
-    type: CreateRoomDto,
-  })
   create(@Body() createRoomDto: CreateRoomDto) {
     return this.roomService.create(createRoomDto);
   }
 
   @Get()
-  findAll() {
-    return this.roomService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.roomService.findAll(paginationDto);
   }
 
   @Get(':id')
-  @ApiParam({
-    name: 'id',
-    required: true,
-    type: Number,
-  })
   findById(@Param('id') id: number) {
     return this.roomService.findById(+id);
   }
@@ -50,27 +45,21 @@ export class RoomController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
-  @ApiParam({
-    name: 'id',
-    required: true,
-    type: Number,
-  })
-  @ApiBody({
-    type: UpdateRoomDto,
-  })
   update(@Param('id') id: number, @Body() updateRoomDto: UpdateRoomDto) {
     return this.roomService.update(+id, updateRoomDto);
+  }
+
+  @Post(':id/book')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  bookRoom(@Param('id') roomId: number, @Body() bookRoomDto: BookRoomDto) {
+    return this.roomService.bookRoom(roomId, bookRoomDto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('manager')
   @ApiBearerAuth()
-  @ApiParam({
-    name: 'id',
-    required: true,
-    type: Number,
-  })
   remove(@Param('id') id: number) {
     return this.roomService.remove(+id);
   }
