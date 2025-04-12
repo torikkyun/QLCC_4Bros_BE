@@ -1,26 +1,114 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateElectionDto } from './dto/create-election.dto';
 import { UpdateElectionDto } from './dto/update-election.dto';
+import { DRIZZLE } from 'src/drizzle/drizzle.module';
+import { DrizzleDB } from 'src/drizzle/types/drizzle';
+import * as t from '../drizzle/schema/schema';
+import { ElectionPaginationDto } from './dto/election-pagination.dto';
+import { eq, asc, count, desc } from 'drizzle-orm';
 
 @Injectable()
 export class ElectionService {
-  create(createElectionDto: CreateElectionDto) {
-    return 'This action adds a new election';
+  constructor(@Inject(DRIZZLE) private db: DrizzleDB) {}
+
+  async create(createElectionDto: CreateElectionDto) {
+    if (createElectionDto.endDate <= createElectionDto.startDate) {
+      throw new BadRequestException('End date must be after start date');
+    }
+    return await this.db
+      .insert(t.elections)
+      .values({
+        ...createElectionDto,
+        startDate: new Date(createElectionDto.startDate)
+          .toISOString()
+          .split('T')[0],
+        endDate: new Date(createElectionDto.endDate)
+          .toISOString()
+          .split('T')[0],
+      })
+      .returning();
   }
 
-  findAll() {
-    return `This action returns all election`;
+  async findAll(electionPaginationDto: ElectionPaginationDto) {
+    const { page = 1, limit = 10, order = 'desc' } = electionPaginationDto;
+    const offset = (page - 1) * limit;
+
+    const orderByCondition =
+      order === 'asc' ? [asc(t.elections.id)] : [desc(t.elections.id)];
+
+    const [data, total] = await Promise.all([
+      this.db.query.elections.findMany({
+        offset,
+        limit,
+        orderBy: orderByCondition,
+      }),
+      this.db.select({ count: count() }).from(t.elections),
+    ]);
+
+    return {
+      data,
+      pagination: {
+        total: total[0].count,
+        page,
+        limit,
+        totalPages: Math.ceil(total[0].count / limit),
+      },
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} election`;
+  async findOne(id: number) {
+    const [result] = await this.db
+      .select()
+      .from(t.elections)
+      .where(eq(t.elections.id, id));
+    return result;
   }
 
-  update(id: number, updateElectionDto: UpdateElectionDto) {
-    return `This action updates a #${id} election`;
+  async update(id: number, updateElectionDto: UpdateElectionDto) {
+    const existingElection = await this.db
+      .select()
+      .from(t.elections)
+      .where(eq(t.elections.id, id))
+      .limit(1);
+
+    if (!existingElection.length) {
+      throw new NotFoundException(`Election with id ${id} not found`);
+    }
+
+    const currentElection = existingElection[0];
+
+    const { startDate, endDate, ...rest } = updateElectionDto;
+
+    const newStartDate = startDate || currentElection.startDate;
+    const newEndDate = endDate || currentElection.endDate;
+
+    if (new Date(newEndDate) < new Date(newStartDate)) {
+      throw new BadRequestException(
+        'endDate must be greater than or equal to startDate',
+      );
+    }
+
+    const updateData = {
+      ...rest,
+      startDate: new Date(newStartDate).toISOString().split('T')[0],
+      endDate: new Date(newEndDate).toISOString().split('T')[0],
+    };
+
+    const updatedElection = await this.db
+      .update(t.elections)
+      .set(updateData)
+      .where(eq(t.elections.id, id))
+      .returning();
+
+    return updatedElection[0];
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} election`;
+  async remove(id: number) {
+    return await this.db.delete(t.elections).where(eq(t.elections.id, id));
   }
 }
