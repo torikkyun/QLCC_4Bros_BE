@@ -3,9 +3,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { DrizzleDB } from 'src/drizzle/types/drizzle';
-import { eq } from 'drizzle-orm';
+import { asc, count, desc, eq } from 'drizzle-orm';
 import * as t from '../drizzle/schema/schema';
 import * as bcrypt from 'bcrypt';
+import { UserPaginationDto } from './dto/user-pagination.dto';
 
 @Injectable()
 export class UserService {
@@ -15,8 +16,31 @@ export class UserService {
     return await this.db.insert(t.users).values(createUserDto).returning();
   }
 
-  async findAll() {
-    return await this.db.query.users.findMany();
+  async findAll(userPaginationDto: UserPaginationDto) {
+    const { page = 1, limit = 10, order = 'desc' } = userPaginationDto;
+    const offset = (page - 1) * limit;
+
+    const orderByCondition =
+      order === 'asc' ? [asc(t.users.id)] : [desc(t.users.id)];
+
+    const [data, total] = await Promise.all([
+      this.db.query.users.findMany({
+        offset,
+        limit,
+        orderBy: orderByCondition,
+      }),
+      this.db.select({ count: count() }).from(t.users),
+    ]);
+
+    return {
+      data,
+      pagination: {
+        total: total[0].count,
+        page,
+        limit,
+        totalPages: Math.ceil(total[0].count / limit),
+      },
+    };
   }
 
   async findByEmail(email: string) {

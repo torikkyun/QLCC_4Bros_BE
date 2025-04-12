@@ -1,26 +1,68 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateCandidateDto } from './dto/create-candidate.dto';
 import { UpdateCandidateDto } from './dto/update-candidate.dto';
+import { DRIZZLE } from 'src/drizzle/drizzle.module';
+import { DrizzleDB } from 'src/drizzle/types/drizzle';
+import * as t from '../drizzle/schema/schema';
+import { CandidatePaginationDto } from './dto/candidate-pagination.dto';
+import { eq, asc, count, desc } from 'drizzle-orm';
 
 @Injectable()
 export class CandidateService {
-  create(createCandidateDto: CreateCandidateDto) {
-    return 'This action adds a new candidate';
+  constructor(@Inject(DRIZZLE) private db: DrizzleDB) {}
+
+  async create(createCandidateDto: CreateCandidateDto) {
+    return await this.db
+      .insert(t.candidates)
+      .values(createCandidateDto)
+      .returning();
   }
 
-  findAll() {
-    return `This action returns all candidate`;
+  async findAll(candidatePaginationDto: CandidatePaginationDto) {
+    const { page = 1, limit = 10, order = 'desc' } = candidatePaginationDto;
+    const offset = (page - 1) * limit;
+
+    const orderByCondition =
+      order === 'asc' ? [asc(t.candidates.id)] : [desc(t.candidates.id)];
+
+    const [data, total] = await Promise.all([
+      this.db.query.candidates.findMany({
+        offset,
+        limit,
+        orderBy: orderByCondition,
+      }),
+      this.db.select({ count: count() }).from(t.candidates),
+    ]);
+
+    return {
+      data,
+      pagination: {
+        total: total[0].count,
+        page,
+        limit,
+        totalPages: Math.ceil(total[0].count / limit),
+      },
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} candidate`;
+  async findById(id: number) {
+    const [result] = await this.db
+      .select()
+      .from(t.candidates)
+      .where(eq(t.candidates.id, id));
+    return result;
   }
 
-  update(id: number, updateCandidateDto: UpdateCandidateDto) {
-    return `This action updates a #${id} candidate`;
+  async update(id: number, updateCandidateDto: UpdateCandidateDto) {
+    const [result] = await this.db
+      .update(t.candidates)
+      .set(updateCandidateDto)
+      .where(eq(t.candidates.id, id))
+      .returning();
+    return result;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} candidate`;
+  async remove(id: number) {
+    return await this.db.delete(t.candidates).where(eq(t.candidates.id, id));
   }
 }
