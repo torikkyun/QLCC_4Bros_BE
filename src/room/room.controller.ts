@@ -17,7 +17,8 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { BookRoomDto } from './dto/book-room.dto';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { RoomPaginationDto } from './dto/room-pagination.dto';
+import { CancelBookRoomDto } from './dto/cancel-book-room.dto';
 
 @Controller('api/room')
 @ApiTags('room')
@@ -33,8 +34,8 @@ export class RoomController {
   }
 
   @Get()
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.roomService.findAll(paginationDto);
+  findAll(@Query() roomPaginationDto: RoomPaginationDto) {
+    return this.roomService.findAll(roomPaginationDto);
   }
 
   @Get(':id')
@@ -52,8 +53,18 @@ export class RoomController {
   @Post(':id/book')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  bookRoom(@Param('id') roomId: number, @Body() bookRoomDto: BookRoomDto) {
-    return this.roomService.bookRoom(roomId, bookRoomDto);
+  bookRoom(@Param('id') id: number, @Body() bookRoomDto: BookRoomDto) {
+    return this.roomService.bookRoom(id, bookRoomDto);
+  }
+
+  @Post(':id/cancel')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  cancelBookRoom(
+    @Param('id') id: number,
+    @Body() cancelBookRoomDto: CancelBookRoomDto,
+  ) {
+    return this.roomService.cancelBookRoom(id, cancelBookRoomDto);
   }
 
   @Delete(':id')

@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 
 export class BookRoomDto {
   @ApiProperty({ required: true, example: 1 })
-  id: number;
+  @IsNumber()
+  @IsNotEmpty()
+  userId: number;
 }
