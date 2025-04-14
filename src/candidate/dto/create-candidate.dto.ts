@@ -2,11 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateCandidateDto {
-  @ApiProperty({ required: true, example: 'This is an introduce' })
+  @ApiProperty({ required: true, example: 'This is an introduction' })
   @IsString()
-  introduce: string;
+  introduction: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, example: 'This is a description' })
   @IsString()
   description?: string;
 

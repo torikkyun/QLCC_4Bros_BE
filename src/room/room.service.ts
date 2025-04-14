@@ -32,13 +32,28 @@ export class RoomService {
       order === 'asc' ? [asc(t.rooms.id)] : [desc(t.rooms.id)];
 
     const [data, total] = await Promise.all([
-      this.db.query.rooms.findMany({
-        offset,
-        limit,
-        where,
-        orderBy: orderByCondition,
-      }),
-      this.db.select({ count: count() }).from(t.rooms).where(where),
+      this.db
+        .select({
+          id: t.rooms.id,
+          roomNumber: t.rooms.roomNumber,
+          price: t.rooms.price,
+          status: t.rooms.status,
+          description: t.rooms.description,
+          user: {
+            id: t.users.id,
+            email: t.users.email,
+            firstName: t.users.firstName,
+            lastName: t.users.lastName,
+          },
+        })
+        .from(t.rooms)
+        .leftJoin(t.users, eq(t.rooms.userId, t.users.id))
+        .orderBy(...orderByCondition)
+        .limit(limit)
+        .offset(offset)
+        .where(where),
+
+      this.db.select({ count: count() }).from(t.rooms),
     ]);
 
     return {
@@ -54,8 +69,21 @@ export class RoomService {
 
   async findById(id: number) {
     const [result] = await this.db
-      .select()
+      .select({
+        id: t.rooms.id,
+        roomNumber: t.rooms.roomNumber,
+        price: t.rooms.price,
+        status: t.rooms.status,
+        description: t.rooms.description,
+        user: {
+          id: t.users.id,
+          email: t.users.email,
+          firstName: t.users.firstName,
+          lastName: t.users.lastName,
+        },
+      })
       .from(t.rooms)
+      .leftJoin(t.users, eq(t.rooms.userId, t.users.id))
       .where(eq(t.rooms.id, id));
     return result;
   }

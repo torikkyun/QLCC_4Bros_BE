@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateCandidateDto } from './dto/create-candidate.dto';
 import { UpdateCandidateDto } from './dto/update-candidate.dto';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
@@ -12,6 +12,14 @@ export class CandidateService {
   constructor(@Inject(DRIZZLE) private db: DrizzleDB) {}
 
   async create(createCandidateDto: CreateCandidateDto) {
+    const [result] = await this.db
+      .select()
+      .from(t.candidates)
+      .where(eq(t.candidates.userId, createCandidateDto.userId));
+    if (result) {
+      throw new UnauthorizedException('This user is already a candidate');
+    }
+
     return await this.db
       .insert(t.candidates)
       .values(createCandidateDto)
@@ -26,11 +34,24 @@ export class CandidateService {
       order === 'asc' ? [asc(t.candidates.id)] : [desc(t.candidates.id)];
 
     const [data, total] = await Promise.all([
-      this.db.query.candidates.findMany({
-        offset,
-        limit,
-        orderBy: orderByCondition,
-      }),
+      this.db
+        .select({
+          id: t.candidates.id,
+          introduction: t.candidates.introduction,
+          description: t.candidates.description,
+          user: {
+            id: t.users.id,
+            email: t.users.email,
+            firstName: t.users.firstName,
+            lastName: t.users.lastName,
+          },
+        })
+        .from(t.candidates)
+        .leftJoin(t.users, eq(t.candidates.userId, t.users.id))
+        .orderBy(...orderByCondition)
+        .limit(limit)
+        .offset(offset),
+
       this.db.select({ count: count() }).from(t.candidates),
     ]);
 
@@ -47,8 +68,19 @@ export class CandidateService {
 
   async findById(id: number) {
     const [result] = await this.db
-      .select()
+      .select({
+        id: t.candidates.id,
+        introduction: t.candidates.introduction,
+        description: t.candidates.description,
+        user: {
+          id: t.users.id,
+          email: t.users.email,
+          firstName: t.users.firstName,
+          lastName: t.users.lastName,
+        },
+      })
       .from(t.candidates)
+      .leftJoin(t.users, eq(t.candidates.userId, t.users.id))
       .where(eq(t.candidates.id, id));
     return result;
   }

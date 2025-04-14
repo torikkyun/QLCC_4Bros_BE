@@ -87,19 +87,19 @@ export class ElectionService {
     const newStartDate = startDate || currentElection.startDate;
     const newEndDate = endDate || currentElection.endDate;
 
-    if (new Date(newEndDate) < new Date(newStartDate)) {
-      throw new BadRequestException(
-        'endDate must be greater than or equal to startDate',
-      );
-    }
+    // if (new Date(newEndDate) < new Date(newStartDate)) {
+    //   throw new BadRequestException(
+    //     'endDate must be greater than or equal to startDate',
+    //   );
+    // }
 
-    if (new Date(newStartDate) < new Date()) {
-      throw new BadRequestException('startDate cannot be in the past');
-    }
+    // if (new Date(newStartDate) < new Date()) {
+    //   throw new BadRequestException('startDate cannot be in the past');
+    // }
 
-    if (new Date(newEndDate) < new Date()) {
-      throw new BadRequestException('endDate cannot be in the past');
-    }
+    // if (new Date(newEndDate) < new Date()) {
+    //   throw new BadRequestException('endDate cannot be in the past');
+    // }
 
     const updateData = {
       ...rest,

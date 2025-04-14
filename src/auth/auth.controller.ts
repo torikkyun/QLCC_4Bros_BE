@@ -17,7 +17,7 @@ export class AuthController {
   @Post('signin')
   @ApiOperation({
     description:
-      'Manager: manager@gmail.com/123456, User: user@gmail.com/123456',
+      'Manager: manager@gmail.com/manager, User: user@gmail.com/123456',
   })
   async signIn(@Body() signInDto: SignInDto) {
     return this.authService.signIn(signInDto);
