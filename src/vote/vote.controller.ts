@@ -3,16 +3,17 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { VoteService } from './vote.service';
 import { CreateVoteDto } from './dto/create-vote.dto';
-import { UpdateVoteDto } from './dto/update-vote.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { User } from 'src/common/decorators/users.decorator';
+import { VotePaginationDto } from './dto/vote-pagination.dto';
+import { RemoveVoteDto } from './dto/remove-vote.dto';
 
 @Controller('api/vote')
 @ApiTags('vote')
@@ -22,35 +23,21 @@ export class VoteController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  create(@Body() createVoteDto: CreateVoteDto) {
-    return this.voteService.create(createVoteDto);
+  create(@Body() createVoteDto: CreateVoteDto, @User() user: { id: number }) {
+    return this.voteService.create(createVoteDto, user.id);
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  findAll() {
-    return this.voteService.findAll();
+  findAll(@Query() votePaginationDto: VotePaginationDto) {
+    return this.voteService.findAll(votePaginationDto);
   }
 
-  @Get(':id')
+  @Delete()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  findOne(@Param('id') id: number) {
-    return this.voteService.findOne(+id);
-  }
-
-  @Patch(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  update(@Param('id') id: number, @Body() updateVoteDto: UpdateVoteDto) {
-    return this.voteService.update(+id, updateVoteDto);
-  }
-
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  remove(@Param('id') id: number) {
-    return this.voteService.remove(+id);
+  remove(@Query() removeVoteDto: RemoveVoteDto, @User() user: { id: number }) {
+    return this.voteService.remove(removeVoteDto, user.id);
   }
 }
