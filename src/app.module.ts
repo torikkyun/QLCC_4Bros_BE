@@ -7,6 +7,7 @@ import { RoomModule } from './room/room.module';
 import { CandidateModule } from './candidate/candidate.module';
 import { ElectionModule } from './election/election.module';
 import { VoteModule } from './vote/vote.module';
+import { SeedService } from './drizzle/seed.service';
 
 @Module({
   imports: [
@@ -19,5 +20,6 @@ import { VoteModule } from './vote/vote.module';
     ElectionModule,
     VoteModule,
   ],
+  providers: [SeedService],
 })
 export class AppModule {}

@@ -4,12 +4,17 @@
 
 ```bash
 $ yarn
-$ docker-compose up -d
-$ yarn run seed:manager
+$ cp .env.sample .env
 ```
 
 ## Chạy dự án
 
 ```bash
-$ yarn run start
+$ yarn run start:dev
+```
+
+## Deploy production
+
+```bash
+docker-compose up -d --build
 ```
