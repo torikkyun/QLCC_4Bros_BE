@@ -17,7 +17,7 @@ export class SignInDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(6)
-  @MaxLength(50)
+  @MaxLength(20)
   @ApiProperty({ required: true, example: '123456' })
   password: string;
 }

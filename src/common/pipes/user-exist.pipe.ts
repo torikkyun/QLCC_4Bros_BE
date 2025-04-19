@@ -15,7 +15,6 @@ export class UserExistsPipe implements PipeTransform {
 
   async transform(value: number | { userId: number }) {
     const userId = typeof value === 'number' ? value : value.userId;
-
     const user = await this.db.query.users.findFirst({
       where: eq(t.users.id, userId),
     });
