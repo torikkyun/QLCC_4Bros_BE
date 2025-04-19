@@ -8,14 +8,6 @@ RUN yarn install --frozen-lockfile
 COPY . .
 RUN yarn build
 
-RUN mkdir -p /tmp/node_modules && \
-    cp -r node_modules/.bin/drizzle-kit /tmp/node_modules/.bin/drizzle-kit && \
-    cp -r node_modules/drizzle-kit /tmp/node_modules/drizzle-kit && \
-    cp -r node_modules/@drizzle-team /tmp/node_modules/@drizzle-team && \
-    cp -r node_modules/@esbuild-kit /tmp/node_modules/@esbuild-kit && \
-    cp -r node_modules/esbuild /tmp/node_modules/esbuild && \
-    cp -r node_modules/esbuild-register /tmp/node_modules/esbuild-register
-
 FROM node:22-alpine AS production
 
 WORKDIR /app
@@ -27,7 +19,12 @@ RUN yarn install --frozen-lockfile --production
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/drizzle ./drizzle
-COPY --from=builder /tmp/node_modules ./node_modules
+COPY --from=builder /app/node_modules/.bin/drizzle-kit ./node_modules/.bin/drizzle-kit
+COPY --from=builder /app/node_modules/drizzle-kit ./node_modules/drizzle-kit
+COPY --from=builder /app/node_modules/@drizzle-team ./node_modules/@drizzle-team
+COPY --from=builder /app/node_modules/@esbuild-kit ./node_modules/@esbuild-kit
+COPY --from=builder /app/node_modules/esbuild ./node_modules/esbuild
+COPY --from=builder /app/node_modules/esbuild-register ./node_modules/esbuild-register
 
 COPY docker-entrypoint.sh ./
 RUN chmod +x ./docker-entrypoint.sh
