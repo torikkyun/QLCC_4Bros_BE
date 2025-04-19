@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { CreateCandidateDto } from './dto/create-candidate.dto';
 import { UpdateCandidateDto } from './dto/update-candidate.dto';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
@@ -12,18 +12,21 @@ export class CandidateService {
   constructor(@Inject(DRIZZLE) private db: DrizzleDB) {}
 
   async create(createCandidateDto: CreateCandidateDto) {
-    const [result] = await this.db
+    const existingCandidate = await this.db
       .select()
       .from(t.candidates)
       .where(eq(t.candidates.userId, createCandidateDto.userId));
-    if (result) {
-      throw new UnauthorizedException('This user is already a candidate');
+
+    if (existingCandidate.length) {
+      throw new ConflictException('This user is already a candidate');
     }
 
-    return await this.db
+    const [result] = await this.db
       .insert(t.candidates)
       .values(createCandidateDto)
       .returning();
+
+    return result;
   }
 
   async findAll(candidatePaginationDto: CandidatePaginationDto) {

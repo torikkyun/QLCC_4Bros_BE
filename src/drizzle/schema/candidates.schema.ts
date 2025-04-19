@@ -8,5 +8,6 @@ export const candidates = pgTable('candidates', {
   description: t.varchar('description', { length: 100 }),
   userId: t
     .integer('user_id')
-    .references(() => users.id, { onDelete: 'cascade' }),
+    .references(() => users.id, { onDelete: 'cascade' })
+    .unique(),
 });

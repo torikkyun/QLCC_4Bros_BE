@@ -5,7 +5,7 @@ export const rolesEnum = pgEnum('roles', ['user', 'manager']);
 
 export const users = pgTable('users', {
   id: t.integer().primaryKey().generatedAlwaysAsIdentity(),
-  email: t.varchar('email', { length: 50 }).notNull(),
+  email: t.varchar('email', { length: 50 }).notNull().unique(),
   password: t.varchar('password', { length: 200 }).notNull(),
   firstName: t.varchar('first_name', { length: 50 }).notNull(),
   lastName: t.varchar('last_name', { length: 50 }).notNull(),
