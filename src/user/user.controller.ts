@@ -7,7 +7,6 @@ import {
   Delete,
   UseGuards,
   Query,
-  UseFilters,
   ParseIntPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -23,7 +22,6 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { UserPaginationDto } from './dto/user-pagination.dto';
 import { UserExistsPipe } from 'src/common/pipes/user-exist.pipe';
-import { HttpExceptionFilter } from 'src/common/filter/http-exception.filter';
 
 @Controller('api/user')
 @ApiTags('user')
@@ -37,7 +35,6 @@ export class UserController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  @UseFilters(HttpExceptionFilter)
   @ApiBearerAuth()
   @ApiParam({
     name: 'id',
@@ -50,7 +47,6 @@ export class UserController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
-  @UseFilters(HttpExceptionFilter)
   @ApiBearerAuth()
   @ApiParam({
     name: 'id',
@@ -76,7 +72,7 @@ export class UserController {
   @ApiOperation({
     summary: 'admin',
   })
-  remove(@Param('id') id: number) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.userService.remove(+id);
   }
 }

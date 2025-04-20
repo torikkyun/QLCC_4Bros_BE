@@ -1,16 +1,28 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { statusRoomEnum } from 'src/drizzle/schema/schema';
+import {
+  IsString,
+  MaxLength,
+  MinLength,
+  IsOptional,
+  IsNumber,
+} from 'class-validator';
 
 export class UpdateRoomDto {
   @ApiProperty({ required: false, example: 'C203' })
+  @IsString()
+  @IsOptional()
+  @MaxLength(5)
+  @MinLength(2)
   roomNumber?: string;
 
   @ApiProperty({ required: false, example: 1000 })
+  @IsNumber()
+  @IsOptional()
   price?: number;
 
-  @ApiProperty({ required: false, example: 'vacant' })
-  status?: (typeof statusRoomEnum.enumValues)[number];
-
   @ApiProperty({ required: false, example: 'this is a description' })
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
   description?: string;
 }

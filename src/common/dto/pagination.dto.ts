@@ -7,6 +7,7 @@ export class PaginationDto {
     required: false,
     default: 1,
     description: 'Page number',
+    type: Number,
   })
   @IsOptional()
   @Type(() => Number)
@@ -18,6 +19,7 @@ export class PaginationDto {
     required: false,
     default: 10,
     description: 'Number of items per page',
+    type: Number,
   })
   @IsOptional()
   @Type(() => Number)

@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto/create-room.dto';
@@ -40,7 +41,7 @@ export class RoomController {
   }
 
   @Get(':id')
-  findById(@Param('id') id: number) {
+  findById(@Param('id', ParseIntPipe) id: number) {
     return this.roomService.findById(+id);
   }
 
@@ -49,14 +50,20 @@ export class RoomController {
   @Roles('manager')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'admin' })
-  update(@Param('id') id: number, @Body() updateRoomDto: UpdateRoomDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateRoomDto: UpdateRoomDto,
+  ) {
     return this.roomService.update(+id, updateRoomDto);
   }
 
   @Post(':id/book')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  bookRoom(@Param('id') id: number, @Body() bookRoomDto: BookRoomDto) {
+  bookRoom(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() bookRoomDto: BookRoomDto,
+  ) {
     return this.roomService.bookRoom(id, bookRoomDto);
   }
 
@@ -64,7 +71,7 @@ export class RoomController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   cancelBookRoom(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() cancelBookRoomDto: CancelBookRoomDto,
   ) {
     return this.roomService.cancelBookRoom(id, cancelBookRoomDto);
@@ -75,7 +82,7 @@ export class RoomController {
   @Roles('manager')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'admin' })
-  remove(@Param('id') id: number) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.roomService.remove(+id);
   }
 }

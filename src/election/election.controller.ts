@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ElectionService } from './election.service';
 import { CreateElectionDto } from './dto/create-election.dto';
@@ -42,7 +43,7 @@ export class ElectionController {
   @Get(':id')
   @UseGuards(RolesGuard)
   @ApiBearerAuth()
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.electionService.findOne(+id);
   }
 
@@ -52,7 +53,7 @@ export class ElectionController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'admin' })
   update(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateElectionDto: UpdateElectionDto,
   ) {
     return this.electionService.update(+id, updateElectionDto);
@@ -63,7 +64,7 @@ export class ElectionController {
   @Roles('manager')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'admin' })
-  remove(@Param('id') id: number) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.electionService.remove(+id);
   }
 }

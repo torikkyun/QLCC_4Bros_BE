@@ -1,4 +1,10 @@
-import { IsDateString, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { statusElectionEnum } from 'src/drizzle/schema/elections.schema';
 
@@ -25,7 +31,10 @@ export class UpdateElectionDto {
   @IsOptional()
   endDate?: string;
 
-  @ApiProperty({ required: false, example: 'upcoming' })
+  @ApiProperty({ required: false, enum: statusElectionEnum.enumValues })
   @IsOptional()
+  @IsEnum(statusElectionEnum.enumValues, {
+    message: `status must be one of the following values: upcoming, ongoing, completed`,
+  })
   status?: (typeof statusElectionEnum.enumValues)[number];
 }

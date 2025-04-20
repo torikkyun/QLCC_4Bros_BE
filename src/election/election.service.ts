@@ -20,7 +20,7 @@ export class ElectionService {
     if (createElectionDto.endDate <= createElectionDto.startDate) {
       throw new BadRequestException('End date must be after start date');
     }
-    return await this.db
+    const [result] = await this.db
       .insert(t.elections)
       .values({
         ...createElectionDto,
@@ -32,6 +32,8 @@ export class ElectionService {
           .split('T')[0],
       })
       .returning();
+
+    return result;
   }
 
   async findAll(electionPaginationDto: ElectionPaginationDto) {
@@ -43,8 +45,8 @@ export class ElectionService {
 
     const [data, total] = await Promise.all([
       this.db.query.elections.findMany({
-        offset,
-        limit,
+        limit: limit,
+        offset: offset,
         orderBy: orderByCondition,
       }),
       this.db.select({ count: count() }).from(t.elections),

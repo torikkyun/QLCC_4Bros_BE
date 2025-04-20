@@ -1,15 +1,17 @@
 import {
   IsDateString,
+  IsEnum,
+  IsNotEmpty,
   IsOptional,
   IsString,
   MaxLength,
-  Validate,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { statusElectionEnum } from 'src/drizzle/schema/elections.schema';
 
 export class CreateElectionDto {
-  @ApiProperty({ example: 'Election 2025' })
+  @ApiProperty({ example: 'Election 2025', required: true })
+  @IsNotEmpty()
   @IsString()
   @MaxLength(50)
   title: string;
@@ -21,20 +23,22 @@ export class CreateElectionDto {
   description?: string;
 
   @ApiProperty({ example: '2025-04-12' })
+  @IsNotEmpty()
   @IsDateString()
   startDate: string;
 
   @ApiProperty({ example: '2025-04-15' })
+  @IsNotEmpty()
   @IsDateString()
-  @Validate(
-    (value: string, { object }: { object: CreateElectionDto }) => {
-      return new Date(value) >= new Date(object.startDate);
-    },
-    { message: 'endDate must be greater than or equal to startDate' },
-  )
   endDate: string;
 
-  @ApiProperty({ required: false, example: 'upcoming', default: 'upcoming' })
+  @ApiProperty({
+    required: false,
+    enum: statusElectionEnum.enumValues,
+  })
   @IsOptional()
+  @IsEnum(statusElectionEnum.enumValues, {
+    message: `status must be one of the following values: upcoming, ongoing, completed`,
+  })
   status?: (typeof statusElectionEnum.enumValues)[number] = 'upcoming';
 }
