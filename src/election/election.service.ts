@@ -63,7 +63,7 @@ export class ElectionService {
     };
   }
 
-  async findOne(id: number) {
+  async findById(id: number) {
     const [result] = await this.db
       .select()
       .from(t.elections)

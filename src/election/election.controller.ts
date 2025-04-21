@@ -44,7 +44,7 @@ export class ElectionController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.electionService.findOne(+id);
+    return this.electionService.findById(+id);
   }
 
   @Patch(':id')

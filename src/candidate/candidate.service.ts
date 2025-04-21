@@ -1,4 +1,9 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCandidateDto } from './dto/create-candidate.dto';
 import { UpdateCandidateDto } from './dto/update-candidate.dto';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
@@ -21,10 +26,26 @@ export class CandidateService {
       throw new ConflictException('This user is already a candidate');
     }
 
-    const [result] = await this.db
+    const [candidate] = await this.db
       .insert(t.candidates)
       .values(createCandidateDto)
       .returning();
+
+    const [result] = await this.db
+      .select({
+        id: t.candidates.id,
+        introduction: t.candidates.introduction,
+        description: t.candidates.description,
+        user: {
+          id: t.users.id,
+          email: t.users.email,
+          firstName: t.users.firstName,
+          lastName: t.users.lastName,
+        },
+      })
+      .from(t.candidates)
+      .leftJoin(t.users, eq(t.candidates.userId, t.users.id))
+      .where(eq(t.candidates.id, candidate.id));
 
     return result;
   }
@@ -89,6 +110,16 @@ export class CandidateService {
   }
 
   async update(id: number, updateCandidateDto: UpdateCandidateDto) {
+    const existingCandidate = await this.db
+      .select()
+      .from(t.candidates)
+      .where(eq(t.candidates.id, id))
+      .limit(1);
+
+    if (!existingCandidate.length) {
+      throw new NotFoundException(`Candidate with id ${id} not found`);
+    }
+
     const [result] = await this.db
       .update(t.candidates)
       .set(updateCandidateDto)
