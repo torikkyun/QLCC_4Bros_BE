@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsString,
   MaxLength,
+  MinLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { statusElectionEnum } from 'src/drizzle/schema/elections.schema';
@@ -14,11 +15,13 @@ export class CreateElectionDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(50)
+  @MinLength(5)
   title: string;
 
   @ApiProperty({ example: 'Description of election', required: false })
   @IsString()
   @MaxLength(100)
+  @MinLength(5)
   @IsOptional()
   description?: string;
 

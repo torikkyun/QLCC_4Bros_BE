@@ -17,9 +17,8 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UpdateRoomDto } from './dto/update-room.dto';
-import { BookRoomDto } from './dto/book-room.dto';
 import { RoomPaginationDto } from './dto/room-pagination.dto';
-import { CancelBookRoomDto } from './dto/cancel-book-room.dto';
+import { User } from 'src/common/decorators/users.decorator';
 
 @Controller('api/room')
 @ApiTags('room')
@@ -62,9 +61,9 @@ export class RoomController {
   @ApiBearerAuth()
   bookRoom(
     @Param('id', ParseIntPipe) id: number,
-    @Body() bookRoomDto: BookRoomDto,
+    @User() user: { id: number },
   ) {
-    return this.roomService.bookRoom(id, bookRoomDto);
+    return this.roomService.bookRoom(id, user.id);
   }
 
   @Post(':id/cancel')
@@ -72,9 +71,9 @@ export class RoomController {
   @ApiBearerAuth()
   cancelBookRoom(
     @Param('id', ParseIntPipe) id: number,
-    @Body() cancelBookRoomDto: CancelBookRoomDto,
+    @User() user: { id: number },
   ) {
-    return this.roomService.cancelBookRoom(id, cancelBookRoomDto);
+    return this.roomService.cancelBookRoom(id, user.id);
   }
 
   @Delete(':id')

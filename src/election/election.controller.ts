@@ -34,14 +34,14 @@ export class ElectionController {
   }
 
   @Get()
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   findAll(@Query() electionPaginationDto: ElectionPaginationDto) {
     return this.electionService.findAll(electionPaginationDto);
   }
 
   @Get(':id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.electionService.findOne(+id);

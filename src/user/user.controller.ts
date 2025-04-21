@@ -22,6 +22,7 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { UserPaginationDto } from './dto/user-pagination.dto';
 import { UserExistsPipe } from 'src/common/pipes/user-exist.pipe';
+import { User } from 'src/common/decorators/users.decorator';
 
 @Controller('api/user')
 @ApiTags('user')
@@ -29,6 +30,8 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   findAll(@Query() userPaginationDto: UserPaginationDto) {
     return this.userService.findAll(userPaginationDto);
   }
@@ -45,19 +48,11 @@ export class UserController {
     return this.userService.findById(+id);
   }
 
-  @Patch(':id')
+  @Patch()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiParam({
-    name: 'id',
-    required: true,
-    type: Number,
-  })
-  update(
-    @Param('id', ParseIntPipe, UserExistsPipe) id: number,
-    @Body() updateUserDto: UpdateUserDto,
-  ) {
-    return this.userService.update(+id, updateUserDto);
+  update(@User() user: { id: number }, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.update(user.id, updateUserDto);
   }
 
   @Delete(':id')
@@ -73,6 +68,6 @@ export class UserController {
     summary: 'admin',
   })
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.userService.remove(+id);
+    return this.userService.remove(id);
   }
 }

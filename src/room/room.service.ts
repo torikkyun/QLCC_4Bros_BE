@@ -1,20 +1,35 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { DrizzleDB } from 'src/drizzle/types/drizzle';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { eq, and, count, asc, desc, SQL } from 'drizzle-orm';
 import * as t from '../drizzle/schema/schema';
-import { BookRoomDto } from './dto/book-room.dto';
 import { RoomPaginationDto } from './dto/room-pagination.dto';
-import { CancelBookRoomDto } from './dto/cancel-book-room.dto';
 
 @Injectable()
 export class RoomService {
   constructor(@Inject(DRIZZLE) private db: DrizzleDB) {}
 
   async create(createRoomDto: CreateRoomDto) {
-    return await this.db.insert(t.rooms).values(createRoomDto).returning();
+    try {
+      const [result] = await this.db
+        .insert(t.rooms)
+        .values(createRoomDto)
+        .returning();
+      return result;
+    } catch (error) {
+      if ((error as { code: string }).code === '23505') {
+        throw new ConflictException(
+          `Room with room number '${createRoomDto.roomNumber}' already exists`,
+        );
+      }
+    }
   }
 
   async findAll(roomPaginationDto: RoomPaginationDto) {
@@ -97,7 +112,7 @@ export class RoomService {
     return result;
   }
 
-  async bookRoom(id: number, bookRoomDto: BookRoomDto) {
+  async bookRoom(id: number, userId: number) {
     const room = await this.db
       .select()
       .from(t.rooms)
@@ -110,21 +125,21 @@ export class RoomService {
       .limit(1);
 
     if (!room.length) {
-      throw new Error('Room does not exist or is already booked');
+      throw new ConflictException('Room does not exist or is already booked');
     }
 
     await this.db
       .update(t.rooms)
       .set({
         status: t.statusRoomEnum.enumValues[0],
-        userId: bookRoomDto.userId,
+        userId: userId,
       })
       .where(eq(t.rooms.id, id));
 
     return this.db.select().from(t.rooms).where(eq(t.rooms.id, id)).limit(1);
   }
 
-  async cancelBookRoom(id: number, cancelBookRoomDto: CancelBookRoomDto) {
+  async cancelBookRoom(id: number, userId: number) {
     const room = await this.db
       .select()
       .from(t.rooms)
@@ -132,13 +147,15 @@ export class RoomService {
         and(
           eq(t.rooms.id, id),
           eq(t.rooms.status, t.statusRoomEnum.enumValues[0]),
-          eq(t.rooms.userId, cancelBookRoomDto.userId),
+          eq(t.rooms.userId, userId),
         ),
       )
       .limit(1);
 
     if (!room.length) {
-      throw new Error('Room is not booked or not booked by this user');
+      throw new ForbiddenException(
+        'Room is not booked or not booked by this user',
+      );
     }
 
     await this.db

@@ -25,5 +25,6 @@ export class CreateRoomDto {
   @IsString()
   @IsOptional()
   @MaxLength(100)
+  @MinLength(5)
   description?: string;
 }
