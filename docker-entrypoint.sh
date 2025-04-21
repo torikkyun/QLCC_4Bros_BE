@@ -14,7 +14,7 @@ if [ "$1" = "node" ]; then
   wait_for_postgres
 
   echo "Running database migrations..."
-  yarn drizzle-kit push:pg
+  yarn drizzle-kit push
 fi
 
 echo "Starting application..."
