@@ -8,7 +8,7 @@ import { CandidateModule } from './candidate/candidate.module';
 import { ElectionModule } from './election/election.module';
 import { VoteModule } from './vote/vote.module';
 import { SeedService } from './drizzle/seed.service';
-import { ElectionDetailModule } from './election-detail/election-detail.module';
+// import { ElectionDetailModule } from './election-detail/election-detail.module';
 
 @Module({
   imports: [
@@ -20,7 +20,7 @@ import { ElectionDetailModule } from './election-detail/election-detail.module';
     CandidateModule,
     ElectionModule,
     VoteModule,
-    ElectionDetailModule,
+    // ElectionDetailModule,
   ],
   providers: [SeedService],
 })

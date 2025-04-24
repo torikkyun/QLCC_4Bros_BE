@@ -71,7 +71,6 @@ export class VoteService {
         election: elections.find((e) => e.id === vote.electionId),
         candidate: {
           id: candidate.id,
-          introduction: candidate.introduction,
           description: candidate.description,
           user: userForCandidate,
         },

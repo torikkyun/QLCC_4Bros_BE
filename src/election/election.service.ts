@@ -10,7 +10,7 @@ import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { DrizzleDB } from 'src/drizzle/types/drizzle';
 import * as t from '../drizzle/schema/schema';
 import { ElectionPaginationDto } from './dto/election-pagination.dto';
-import { eq, asc, count, desc } from 'drizzle-orm';
+import { eq, asc, count, desc, sql, inArray } from 'drizzle-orm';
 
 @Injectable()
 export class ElectionService {
@@ -71,6 +71,32 @@ export class ElectionService {
     return result;
   }
 
+  async getCandidatesWithElectionStatus(electionId: number) {
+    const result = await this.db
+      .select({
+        id: t.candidates.id,
+        description: t.candidates.description,
+        isSelected:
+          sql<boolean>`(${t.electionDetails.electionId} IS NOT NULL)`.as(
+            'isSelected',
+          ),
+        user: {
+          id: t.users.id,
+          email: t.users.email,
+          firstName: t.users.firstName,
+          lastName: t.users.lastName,
+        },
+      })
+      .from(t.candidates)
+      .leftJoin(
+        t.electionDetails,
+        sql`${t.electionDetails.candidateId} = ${t.candidates.id} AND ${t.electionDetails.electionId} = ${electionId}`,
+      )
+      .leftJoin(t.users, eq(t.candidates.userId, t.users.id));
+
+    return result;
+  }
+
   async update(id: number, updateElectionDto: UpdateElectionDto) {
     const existingElection = await this.db
       .select()
@@ -116,6 +142,40 @@ export class ElectionService {
       .returning();
 
     return updatedElection[0];
+  }
+
+  async updateElectionCandidates(electionId: number, candidateIds: number[]) {
+    const existingElection = await this.findById(electionId);
+    if (!existingElection) {
+      throw new NotFoundException(`Election with id ${electionId} not found`);
+    }
+
+    const uniqueCandidateIds = [...new Set(candidateIds)];
+
+    if (uniqueCandidateIds.length > 0) {
+      const existingCandidates = await this.db
+        .select()
+        .from(t.candidates)
+        .where(inArray(t.candidates.id, uniqueCandidateIds));
+
+      if (existingCandidates.length !== uniqueCandidateIds.length) {
+        throw new NotFoundException('One or more candidates not found');
+      }
+    }
+
+    await this.db
+      .delete(t.electionDetails)
+      .where(eq(t.electionDetails.electionId, electionId));
+
+    if (uniqueCandidateIds.length > 0) {
+      const data = uniqueCandidateIds.map((candidateId) => ({
+        electionId,
+        candidateId,
+      }));
+      await this.db.insert(t.electionDetails).values(data);
+    }
+
+    return { success: true };
   }
 
   async remove(id: number) {

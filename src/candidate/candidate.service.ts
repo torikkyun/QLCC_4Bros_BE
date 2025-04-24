@@ -16,11 +16,11 @@ import { eq, asc, count, desc } from 'drizzle-orm';
 export class CandidateService {
   constructor(@Inject(DRIZZLE) private db: DrizzleDB) {}
 
-  async create(createCandidateDto: CreateCandidateDto) {
+  async create(createCandidateDto: CreateCandidateDto, userId: number) {
     const existingCandidate = await this.db
       .select()
       .from(t.candidates)
-      .where(eq(t.candidates.userId, createCandidateDto.userId));
+      .where(eq(t.candidates.userId, userId));
 
     if (existingCandidate.length) {
       throw new ConflictException('This user is already a candidate');
@@ -28,13 +28,12 @@ export class CandidateService {
 
     const [candidate] = await this.db
       .insert(t.candidates)
-      .values(createCandidateDto)
+      .values({ ...createCandidateDto, userId })
       .returning();
 
     const [result] = await this.db
       .select({
         id: t.candidates.id,
-        introduction: t.candidates.introduction,
         description: t.candidates.description,
         user: {
           id: t.users.id,
@@ -44,7 +43,7 @@ export class CandidateService {
         },
       })
       .from(t.candidates)
-      .leftJoin(t.users, eq(t.candidates.userId, t.users.id))
+      .innerJoin(t.users, eq(t.candidates.userId, t.users.id))
       .where(eq(t.candidates.id, candidate.id));
 
     return result;
@@ -61,7 +60,6 @@ export class CandidateService {
       this.db
         .select({
           id: t.candidates.id,
-          introduction: t.candidates.introduction,
           description: t.candidates.description,
           user: {
             id: t.users.id,
@@ -94,7 +92,6 @@ export class CandidateService {
     const [result] = await this.db
       .select({
         id: t.candidates.id,
-        introduction: t.candidates.introduction,
         description: t.candidates.description,
         user: {
           id: t.users.id,
@@ -120,11 +117,26 @@ export class CandidateService {
       throw new NotFoundException(`Candidate with id ${id} not found`);
     }
 
-    const [result] = await this.db
+    await this.db
       .update(t.candidates)
       .set(updateCandidateDto)
-      .where(eq(t.candidates.id, id))
-      .returning();
+      .where(eq(t.candidates.id, id));
+
+    const [result] = await this.db
+      .select({
+        id: t.candidates.id,
+        description: t.candidates.description,
+        user: {
+          id: t.users.id,
+          email: t.users.email,
+          firstName: t.users.firstName,
+          lastName: t.users.lastName,
+        },
+      })
+      .from(t.candidates)
+      .leftJoin(t.users, eq(t.candidates.userId, t.users.id))
+      .where(eq(t.candidates.id, id));
+
     return result;
   }
 

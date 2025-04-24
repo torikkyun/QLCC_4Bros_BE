@@ -4,7 +4,6 @@ import { users } from './users.schema';
 
 export const candidates = pgTable('candidates', {
   id: t.integer().primaryKey().generatedAlwaysAsIdentity(),
-  introduction: t.varchar('introduction', { length: 200 }),
   description: t.varchar('description', { length: 100 }),
   userId: t
     .integer('user_id')

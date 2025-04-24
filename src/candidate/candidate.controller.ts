@@ -12,12 +12,10 @@ import {
 import { CandidateService } from './candidate.service';
 import { CreateCandidateDto } from './dto/create-candidate.dto';
 import { UpdateCandidateDto } from './dto/update-candidate.dto';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Roles } from 'src/common/decorators/roles.decorator';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
 import { CandidatePaginationDto } from './dto/candidate-pagination.dto';
-import { UserExistsPipe } from 'src/common/pipes/user-exist.pipe';
+import { User } from 'src/common/decorators/users.decorator';
 
 @Controller('api/candidate')
 @ApiTags('candidate')
@@ -25,15 +23,13 @@ export class CandidateController {
   constructor(private readonly candidateService: CandidateService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('manager')
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'admin' })
   create(
-    @Body(UserExistsPipe)
-    createCandidateDto: CreateCandidateDto,
+    @Body() createCandidateDto: CreateCandidateDto,
+    @User() user: { id: number },
   ) {
-    return this.candidateService.create(createCandidateDto);
+    return this.candidateService.create(createCandidateDto, user.id);
   }
 
   @Get()
@@ -50,23 +46,19 @@ export class CandidateController {
     return this.candidateService.findById(+id);
   }
 
-  @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('manager')
+  @Patch()
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'admin' })
   update(
-    @Param('id') id: string,
     @Body() updateCandidateDto: UpdateCandidateDto,
+    @User() user: { id: number },
   ) {
-    return this.candidateService.update(+id, updateCandidateDto);
+    return this.candidateService.update(+user.id, updateCandidateDto);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('manager')
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'admin' })
   remove(@Param('id') id: string) {
     return this.candidateService.remove(+id);
   }
