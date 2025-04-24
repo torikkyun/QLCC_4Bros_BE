@@ -1,20 +1,9 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Delete,
-  UseGuards,
-  Query,
-} from '@nestjs/common';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { VoteService } from './vote.service';
 import { CreateVoteDto } from './dto/create-vote.dto';
-import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { User } from 'src/common/decorators/users.decorator';
-import { VotePaginationDto } from './dto/vote-pagination.dto';
-import { RemoveVoteDto } from './dto/remove-vote.dto';
-import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @Controller('api/vote')
 @ApiTags('vote')
@@ -26,20 +15,5 @@ export class VoteController {
   @ApiBearerAuth()
   create(@Body() createVoteDto: CreateVoteDto, @User() user: { id: number }) {
     return this.voteService.create(createVoteDto, user.id);
-  }
-
-  @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'admin' })
-  findAll(@Query() votePaginationDto: VotePaginationDto) {
-    return this.voteService.findAll(votePaginationDto);
-  }
-
-  @Delete()
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  remove(@Query() removeVoteDto: RemoveVoteDto, @User() user: { id: number }) {
-    return this.voteService.remove(removeVoteDto, user.id);
   }
 }

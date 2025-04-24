@@ -97,6 +97,61 @@ export class ElectionService {
     return result;
   }
 
+  async getElectionResults(electionId: number) {
+    const election = await this.findById(electionId);
+    if (!election) {
+      throw new NotFoundException(`Election with id ${electionId} not found`);
+    }
+
+    if (election.status !== 'completed') {
+      throw new BadRequestException(
+        'Election results are only available for completed elections',
+      );
+    }
+
+    const candidatesInElection = await this.db
+      .select({
+        candidateId: t.electionDetails.candidateId,
+        description: t.candidates.description,
+        user: {
+          id: t.users.id,
+          firstName: t.users.firstName,
+          lastName: t.users.lastName,
+          email: t.users.email,
+        },
+      })
+      .from(t.electionDetails)
+      .innerJoin(
+        t.candidates,
+        eq(t.electionDetails.candidateId, t.candidates.id),
+      )
+      .innerJoin(t.users, eq(t.candidates.userId, t.users.id))
+      .where(eq(t.electionDetails.electionId, electionId));
+
+    if (!candidatesInElection.length) {
+      throw new NotFoundException('No candidates found for this election');
+    }
+
+    const voteCounts = await this.db
+      .select({
+        candidateId: t.votes.candidateId,
+        count: sql<number>`COUNT(*)`.as('count'),
+      })
+      .from(t.votes)
+      .where(eq(t.votes.electionId, electionId))
+      .groupBy(t.votes.candidateId);
+
+    const voteMap = new Map<number, number>();
+    voteCounts.forEach((vc) => voteMap.set(vc.candidateId, vc.count));
+
+    return candidatesInElection.map((entry) => ({
+      candidateId: entry.candidateId,
+      description: entry.description,
+      user: entry.user,
+      voteCount: voteMap.get(entry.candidateId) || 0,
+    }));
+  }
+
   async update(id: number, updateElectionDto: UpdateElectionDto) {
     const existingElection = await this.db
       .select()

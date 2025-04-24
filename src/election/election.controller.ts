@@ -58,6 +58,11 @@ export class ElectionController {
     return this.electionService.getCandidatesWithElectionStatus(id);
   }
 
+  @Get(':id/results')
+  getElectionResults(@Param('id', ParseIntPipe) id: number) {
+    return this.electionService.getElectionResults(id);
+  }
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('manager')
