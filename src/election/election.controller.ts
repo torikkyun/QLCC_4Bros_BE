@@ -59,6 +59,8 @@ export class ElectionController {
   }
 
   @Get(':id/results')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   getElectionResults(@Param('id', ParseIntPipe) id: number) {
     return this.electionService.getElectionResults(id);
   }

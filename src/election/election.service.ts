@@ -103,11 +103,11 @@ export class ElectionService {
       throw new NotFoundException(`Election with id ${electionId} not found`);
     }
 
-    if (election.status !== 'completed') {
-      throw new BadRequestException(
-        'Election results are only available for completed elections',
-      );
-    }
+    // if (election.status !== 'completed') {
+    //   throw new BadRequestException(
+    //     'Election results are only available for completed elections',
+    //   );
+    // }
 
     const candidatesInElection = await this.db
       .select({
