@@ -77,4 +77,28 @@ export class VoteService {
       .values({ ...createVoteDto, userId })
       .returning();
   }
+
+  async checkUserVoteStatus(electionId: number, userId: number) {
+    const [election] = await this.db
+      .select()
+      .from(t.elections)
+      .where(eq(t.elections.id, electionId));
+
+    if (!election) {
+      throw new NotFoundException(`Election with id ${electionId} not found`);
+    }
+
+    const existingVote = await this.db
+      .select()
+      .from(t.votes)
+      .where(
+        and(eq(t.votes.userId, userId), eq(t.votes.electionId, electionId)),
+      )
+      .limit(1);
+
+    return {
+      hasVoted: existingVote.length > 0,
+      electionStatus: election.status,
+    };
+  }
 }

@@ -1,4 +1,12 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { VoteService } from './vote.service';
 import { CreateVoteDto } from './dto/create-vote.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -15,5 +23,15 @@ export class VoteController {
   @ApiBearerAuth()
   create(@Body() createVoteDto: CreateVoteDto, @User() user: { id: number }) {
     return this.voteService.create(createVoteDto, user.id);
+  }
+
+  @Get(':electionId/check-status')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  checkVoteStatus(
+    @Param('electionId', ParseIntPipe) electionId: number,
+    @User() user: { id: number },
+  ) {
+    return this.voteService.checkUserVoteStatus(electionId, user.id);
   }
 }
