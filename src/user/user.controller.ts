@@ -36,6 +36,13 @@ export class UserController {
     return this.userService.findAll(userPaginationDto);
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  findMe(@User() user: { id: number }) {
+    return this.userService.findById(+user.id);
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

@@ -10,10 +10,14 @@ import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { DrizzleDB } from 'src/drizzle/types/drizzle';
 import { eq, and } from 'drizzle-orm';
 import * as t from '../drizzle/schema/schema';
+import { CandidateService } from 'src/candidate/candidate.service';
 
 @Injectable()
 export class VoteService {
-  constructor(@Inject(DRIZZLE) private db: DrizzleDB) {}
+  constructor(
+    @Inject(DRIZZLE) private db: DrizzleDB,
+    private readonly candidateService: CandidateService,
+  ) {}
 
   async create(createVoteDto: CreateVoteDto, userId: number) {
     const [election] = await this.db
@@ -99,6 +103,10 @@ export class VoteService {
     return {
       hasVoted: existingVote.length > 0,
       electionStatus: election.status,
+      candidateId:
+        existingVote.length > 0
+          ? await this.candidateService.findById(existingVote[0].candidateId)
+          : null,
     };
   }
 }
